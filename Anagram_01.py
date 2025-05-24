@@ -3,7 +3,8 @@
 
 
 # テストケース
-test = 'ta'   
+test = 'asdgawega'  # 存在しないとき
+test = 'a" .c t'    # 変な文字が沢山あるとき
 
 # 辞書ファイルの取得、1行ごとに保存
 f = open('words.txt','r')
@@ -27,7 +28,9 @@ def createSortedDictionary( words ):
 sortedDictionary = createSortedDictionary(data)    # 辞書をソートする
 
 sortedInput = ''.join(sorted(test))    # テストケースをソートする
-
+sortedInput = sortedInput.replace(" ","")
+sortedInput = sortedInput.replace("\"","")
+sortedInput = sortedInput.replace(".","")
 
 # ソートした単語(test) が、辞書(Words)の中にあるかを二分探索で調べていく
 def binarySearch( test , Words):
@@ -38,17 +41,18 @@ def binarySearch( test , Words):
     while(low <= high):
         middle = int (( high + low ) / 2)
 
-        if( test == Words[middle][0] ): # 真ん中が
+        if( test == Words[middle][0] ):
             return Words[middle][:]
         elif( test < Words[middle][0]):
             high = middle - 1
         else:
             low = middle + 1
+    
+    # whileを抜けてしまったとき、そのanagramは存在しない
+    return test+'\'s angram doesn\'t exist'
 
 
 
-
-# print(middle)
 
 
 print(binarySearch(sortedInput,sortedDictionary))
