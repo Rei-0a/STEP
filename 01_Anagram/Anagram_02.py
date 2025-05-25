@@ -1,5 +1,27 @@
-# 与えられた文字列のAnagramを辞書ファイルから探して、「見つかったアナグラム全部」を答えるプログラムを作る
-# 自分でテストケースを作って、確認してね♪
+'''
+与えられた文字列の全ての文字を使わなくても良いように関数をアップグ
+レードする。
+入力：small.txt , medium.txt, large.txt
+出力：各単語について「最大のスコアを持つアナグラム」を列挙したファイ
+ル
+'''
+
+'''
+聞きたいこと
+スコア計算をどこでやるのが最もいいのか？
+<calculateBestScore内>
+全ての解答が入った配列を引数として計算している
+×再度どのアルファベットが使用されているか一字ずつ見てしまっている
+〇答えではないとわかっている単語のスコアを計算しなくともよい
+
+N回の計算量？
+
+<anagramSearch内>
+〇単語のアルファベットの数を予め計算していて、その数をもとに判定している
+×アナグラムを作成できない単語のスコアも途中までではあるけれど計算してしまうことになる
+
+（存在するアナグラムの数）× （その文字数）の計算量？
+'''
 
 import re
 import sys
@@ -42,7 +64,8 @@ def anagramSearch( input , Words):
     anagramSets= []
     
     for i in range(len(Words)):
-        canCreate = 1
+        canCreate = 1   # Words[i][:]が作れるときは1、そうでなければ0
+        
         for j in range(26):
             if( input[j] < Words[i][j] and canCreate == 1):
                 canCreate = 0
@@ -69,12 +92,47 @@ def printAllAnswers( Answers ):
             else:
                 print(Answers[i],end = '\n\n')
 
+# 最も良いスコアを全て計算する関数
+def calculateBestScore( Answers ):
+
+    bestScore = 0
+    bestScoreWord = ''
+    onePointChar = ['a','e','h','i','n','o','r','s','t']
+    twoPointChar = ['c','d','l','m','u']
+    threePointChar = ['b','f','g','p','v','w','y']
+    fourPointChar = ['j','k','q','x','z']
+
+    for word in range(len(Answers)):
+        score = 0
+        # print(Answers[word])
+        for i in range(len(Answers[word])):
+            
+            if(Answers[word][i] in onePointChar):
+                score += 1
+            elif(Answers[word][i] in twoPointChar):
+                score += 2
+            elif(Answers[word][i] in threePointChar):
+                score += 3
+            elif(Answers[word][i] in fourPointChar):
+                score += 4
+
+        if(score > bestScore):
+            bestScore = score
+            bestScoreWord = word
+
+    # print(Answers[bestScoreWord], bestScore)
+
+    return Answers[bestScoreWord]
+
+            
 
 countedDictionary = createCountedDictionary(data)    # 辞書の単語のアルファベットをカウントする
 
-f = open('small.txt','r')
+f = open('large.txt','r')
 inputData = f.read().splitlines()
 f.close
+
+outputfile = open('result.txt','w')
 
 # 与えられたテキストからアナグラムを全て表示する
 for input in range(len(inputData)):
@@ -96,4 +154,14 @@ for input in range(len(inputData)):
     Answers = anagramSearch(inputAlphabetCount,countedDictionary)   # 答えを格納する
 
     # printAllAnswers(Answers)
+    bestWord = calculateBestScore(Answers)
+    outputfile.write(bestWord+'\n')
 
+outputfile.close()
+
+'''
+small.txt score 193
+medium.txt 18911
+large.txt 244642
+large.txtのbestアナグラムを出力するときに、25秒で513個ほどの計算量。8分くらい待つ。遅すぎる、、、？
+'''
