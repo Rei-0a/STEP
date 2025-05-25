@@ -36,7 +36,8 @@ def createCountedDictionary( words ):
 
     # sortedf.close()
     return countedDictionary
-# アルファベットをカウントした単語(input) が、辞書(Words)の中にあるかを二分探索で調べていく
+
+# アルファベットをカウントした単語(input) が、辞書(Words)の中にあるかを調べていく関数
 def anagramSearch( input , Words):
     anagramSets= []
     
@@ -54,15 +55,33 @@ def anagramSearch( input , Words):
                 
     return anagramSets
 
+# 答えを全て出力する関数
+def printAllAnswers( Answers ):
+
+    if(Answers == []):
+        print("There are no anagrams that can be made from"+seikika+"'s characters.")
+    else:
+        print("The anagrams that can be made from"+seikika+"'s these characters are as follows:")
+        print('length = ',len(Answers))
+        for i in range(len(Answers)):
+            if(i < len(Answers)-1):
+                print(Answers[i],end=', ')
+            else:
+                print(Answers[i],end = '\n\n')
+
+
 countedDictionary = createCountedDictionary(data)    # 辞書の単語のアルファベットをカウントする
 
 f = open('small.txt','r')
 inputData = f.read().splitlines()
 f.close
+
+# 与えられたテキストからアナグラムを全て表示する
 for input in range(len(inputData)):
+
     # 入力された単語から、文字以外を取り除く
     pattern = r'([a-zA-Z]*)'
-    seikika = re.findall(pattern,input)  # 入力から全ての文字列を見つける
+    seikika = re.findall(pattern,inputData[input])  # 入力から全ての文字列を見つける
     seikika = "".join(sorted(seikika))  # 見つけた文字列を結合する
     seikika = str.lower(seikika)        # 全ての文字列を小文字にする
 
@@ -74,23 +93,7 @@ for input in range(len(inputData)):
     for j in range(len(seikika)):
         inputAlphabetCount[(ord(seikika[j])-ord('a'))] += 1    # a:0 ~ z:25　の場所をインクリメント
 
-    Answers = anagramSearch(inputAlphabetCount,countedDictionary)
+    Answers = anagramSearch(inputAlphabetCount,countedDictionary)   # 答えを格納する
 
-    if(Answers == []):
-        print("There are no anagrams that can be made from"+seikika+"'s characters.")
-    else:
-        print("The anagrams that can be made from"+seikika+"'s these characters are as follows:")
-        for i in range(len(Answers)):
-            if(i < len(Answers)):
-                print(Answers[i],end=', ')
-            else:
-                print(Answers[i])
+    # printAllAnswers(Answers)
 
-# Answers = binarySearch(sortedInput,sortedDictionary)
-
-# if(Answers == 0 ):
-#     print(test,"'s Anagram doesn't exist")
-# else:
-#     print(test,"'s anagram is")
-#     for answer in Answers:
-#         print(answer[1])
