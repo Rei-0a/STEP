@@ -22,7 +22,7 @@ def createSortedDictionary( words ):
 
     sortedDictionary = []
 
-    # sortedf = open('sortedWords.txt','w')
+    # sortedf = open('sortedWords_01.txt','w')
 
     for i in words:
         sortedWord = ''.join(sorted(i))    # iをソートしたものを結合する
