@@ -45,9 +45,7 @@ sortedInput = ''.join(sorted(seikika))    # テストケースをソートする
 
 if(sortedInput == ""):
     sys.exit("文字列が与えられていません。プログラムを終了します。")
-# sortedInput = sortedInput.replace(" ","")
-# sortedInput = sortedInput.replace("\"","")
-# sortedInput = sortedInput.replace(".","")
+
 
 # ソートした単語(test) が、辞書(Words)の中にあるかを二分探索で調べていく
 def binarySearch( test , Words):
