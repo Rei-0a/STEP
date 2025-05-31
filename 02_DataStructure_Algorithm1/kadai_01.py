@@ -37,6 +37,9 @@ def calculate_hash(key):
     return hash
 
 
+
+
+
 # An item object that represents one key - value pair in the hash table.
 class Item:
     # |key|: The key of the item. The key must be a string.
@@ -67,6 +70,26 @@ class HashTable:
         self.buckets = [None] * self.bucket_size
         self.item_count = 0
 
+    #
+    # ReHash
+    #
+    def reHash(self, new_bucket_size):
+        old_buclets = self.buckets   # 再ハッシュする前のデータを残しておく
+        self.buckets = [None] * new_bucket_size
+        self.bucket_size = new_bucket_size
+
+        for header in old_buclets:
+
+            while header:   # それぞれのハッシュ表の先頭
+
+                bucket_index = calculate_hash(header.key) % new_bucket_size # 新しいハッシュ値を計算
+                new_item = Item(header.key, header.value, self.buckets[bucket_index]) # 新しいアイテムを作って、最初に追加する
+                self.buckets[bucket_index] = new_item   # 最初に挿入(LIFO)
+                header = header.next
+
+        return True
+
+
     # Put an item to the hash table. If the key already exists, the
     # corresponding value is updated to a new value.
     #
@@ -76,10 +99,15 @@ class HashTable:
     #               and the value is updated.
     def put(self, key, value):
         assert type(key) == str
+        # 要素数  > テーブルサイズ * 0.7
+        if(self.item_count > self.bucket_size * 0.7):
+            new_bucket_size = self.bucket_size * 2 - 1
+            self.reHash(new_bucket_size)
+            
         self.check_size() # Note: Don't remove this code.
         bucket_index = calculate_hash(key) % self.bucket_size
         item = self.buckets[bucket_index]   # 格納したいハッシュ表に、既に入っていなければNone
-        while item:
+        while item: # キー内部に同じものがないかを探索
             if item.key == key:
                 item.value = value
                 return False
@@ -112,6 +140,10 @@ class HashTable:
     #               otherwise.
     def delete(self, key):
         assert type(key) == str
+
+        if self.item_count < self.bucket_size * 0.3:
+            new_size = max(97, self.bucket_size // 2 -1 )
+            self.reHash(new_size)
         
         bucket_index = calculate_hash(key) % self.bucket_size   # 与えられた文字列のインデックスを探す
         item = self.buckets[bucket_index]   # そのインデックスのハッシュ表内のデータ
@@ -141,7 +173,8 @@ class HashTable:
     def check_size(self):
         assert (self.bucket_size < 100 or
                 self.item_count >= self.bucket_size * 0.3)
-
+        
+    
 
 # Test the functional behavior of the hash table.
 def functional_test():
