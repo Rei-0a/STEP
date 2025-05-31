@@ -13,119 +13,236 @@ O(1)で動くハッシュテーブルを実装してみよう
 ヒント3💡ハッシュ関数を見直そう
 
 """
-import sys
+import random, sys, time
 
-# Implement a data structure that stores the most recently accessed N pages.
-# See the below test cases to see how it should work.
+###########################################################################
+#                                                                         #
+# Implement a hash table from scratch! (⑅•ᴗ•⑅)                            #
+#                                                                         #
+# Please do not use Python's dictionary or Python's collections library.  #
+# The goal is to implement the data structure yourself.                   #
+#                                                                         #
+###########################################################################
+
+# Hash function.
 #
-# Note: Please do not use a library like collections.OrderedDict). The goal is
-#       to implement the data structure yourself!
-
-class Cache:
-    # Initialize the cache.
-    # |n|: The size of the cache.
-    def __init__(self, n):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
-
-    # Access a page and update the cache so that it stores the most recently
-    # accessed N pages. This needs to be done with mostly O(1).
-    # |url|: The accessed URL
-    # |contents|: The contents of the URL
-    def access_page(self, url, contents):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
-
-    # Return the URLs stored in the cache. The URLs are ordered in the order
-    # in which the URLs are mostly recently accessed.
-    def get_pages(self):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+# |key|: string
+# Return value: a hash value
+def calculate_hash(key):
+    assert type(key) == str
+    # Note: This is not a good hash function. Do you see why?
+    hash = 0
+    for i in key:
+        hash += ord(i)
+    return hash
 
 
-def cache_test():
-    # Set the size of the cache to 4.
-    cache = Cache(4)
+# An item object that represents one key - value pair in the hash table.
+class Item:
+    # |key|: The key of the item. The key must be a string.
+    # |value|: The value of the item.
+    # |next|: The next item in the linked list. If this is the last item in the
+    #         linked list, |next| is None.
+    def __init__(self, key, value, next):
+        assert type(key) == str
+        self.key = key
+        self.value = value
+        self.next = next
 
-    # Initially, no page is cached.
-    assert cache.get_pages() == []
 
-    # Access "a.com".
-    cache.access_page("a.com", "AAA")
-    # "a.com" is cached.
-    assert cache.get_pages() == ["a.com"]
+# The main data structure of the hash table that stores key - value pairs.
+# The key must be a string. The value can be any type.
+#
+# |self.bucket_size|: The bucket size.
+# |self.buckets|: An array of the buckets. self.buckets[hash % self.bucket_size]
+#                 stores a linked list of items whose hash value is |hash|.
+# |self.item_count|: The total number of items in the hash table.
+class HashTable:
 
-    # Access "b.com".
-    cache.access_page("b.com", "BBB")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "b.com", "a.com" -->(least recently accessed)
-    assert cache.get_pages() == ["b.com", "a.com"]
+    # Initialize the hash table.
+    def __init__(self):
+        # Set the initial bucket size to 97. A prime number is chosen to reduce
+        # hash conflicts.
+        self.bucket_size = 97
+        self.buckets = [None] * self.bucket_size
+        self.item_count = 0
 
-    # Access "c.com".
-    cache.access_page("c.com", "CCC")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "c.com", "b.com", "a.com" -->(least recently accessed)
-    assert cache.get_pages() == ["c.com", "b.com", "a.com"]
+    # Put an item to the hash table. If the key already exists, the
+    # corresponding value is updated to a new value.
+    #
+    # |key|: The key of the item.
+    # |value|: The value of the item.
+    # Return value: True if a new item is added. False if the key already exists
+    #               and the value is updated.
+    def put(self, key, value):
+        assert type(key) == str
+        self.check_size() # Note: Don't remove this code.
+        bucket_index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[bucket_index]   # 格納したいハッシュ表に、既に入っていなければNone
+        while item:
+            if item.key == key:
+                item.value = value
+                return False
+            item = item.next
+        new_item = Item(key, value, self.buckets[bucket_index])
+        self.buckets[bucket_index] = new_item
+        self.item_count += 1
+        return True
 
-    # Access "d.com".
-    cache.access_page("d.com", "DDD")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "d.com", "c.com", "b.com", "a.com" -->(least recently accessed)
-    assert cache.get_pages() == ["d.com", "c.com", "b.com", "a.com"]
+    # Get an item from the hash table.
+    #
+    # |key|: The key.
+    # Return value: If the item is found, (the value of the item, True) is
+    #               returned. Otherwise, (None, False) is returned.
+    def get(self, key):
+        assert type(key) == str
+        self.check_size() # Note: Don't remove this code.
+        bucket_index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[bucket_index]
+        while item:
+            if item.key == key:
+                return (item.value, True)
+            item = item.next
+        return (None, False)
 
-    # Access "d.com" again.
-    cache.access_page("d.com", "DDD")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "d.com", "c.com", "b.com", "a.com" -->(least recently accessed)
-    assert cache.get_pages() == ["d.com", "c.com", "b.com", "a.com"]
+    # Delete an item from the hash table.
+    #
+    # |key|: The key.
+    # Return value: True if the item is found and deleted successfully. False
+    #               otherwise.
+    def delete(self, key):
+        assert type(key) == str
+        
+        bucket_index = calculate_hash(key) % self.bucket_size   # 与えられた文字列のインデックスを探す
+        item = self.buckets[bucket_index]   # そのインデックスのハッシュ表内のデータ
+        prev = None # 一つ前のノード
+        while(item):
+            if item.key == key:
+                if prev == None:    # 親ノードだったとき
+                    self.buckets[bucket_index] = item.next
+                else:
+                    prev.next = item.next   # 前のノードを、次のノードへつける
+                self.item_count -= 1    # 要素が減るので1減らす
+                return True
+            
+            prev = item
+            item = item.next
+        return False
 
-    # Access "a.com" again.
-    cache.access_page("a.com", "AAA")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "a.com", "d.com", "c.com", "b.com" -->(least recently accessed)
-    assert cache.get_pages() == ["a.com", "d.com", "c.com", "b.com"]
+    # Return the total number of items in the hash table.
+    def size(self):
+        return self.item_count
 
-    cache.access_page("c.com", "CCC")
-    assert cache.get_pages() == ["c.com", "a.com", "d.com", "b.com"]
-    cache.access_page("a.com", "AAA")
-    assert cache.get_pages() == ["a.com", "c.com", "d.com", "b.com"]
-    cache.access_page("a.com", "AAA")
-    assert cache.get_pages() == ["a.com", "c.com", "d.com", "b.com"]
+    # Check that the hash table has a "reasonable" bucket size.
+    # The bucket size is judged "reasonable" if it is smaller than 100 or
+    # the buckets are 30% or more used.
+    #
+    # Note: Don't change this function.
+    def check_size(self):
+        assert (self.bucket_size < 100 or
+                self.item_count >= self.bucket_size * 0.3)
 
-    # Access "e.com".
-    cache.access_page("e.com", "EEE")
-    # The cache is full, so we need to remove the least recently accessed page "b.com".
-    # The cache is updated to:
-    #   (most recently accessed)<-- "e.com", "a.com", "c.com", "d.com" -->(least recently accessed)
-    assert cache.get_pages() == ["e.com", "a.com", "c.com", "d.com"]
 
-    # Access "f.com".
-    cache.access_page("f.com", "FFF")
-    # The cache is full, so we need to remove the least recently accessed page "c.com".
-    # The cache is updated to:
-    #   (most recently accessed)<-- "f.com", "e.com", "a.com", "c.com" -->(least recently accessed)
-    assert cache.get_pages() == ["f.com", "e.com", "a.com", "c.com"]
+# Test the functional behavior of the hash table.
+def functional_test():
+    hash_table = HashTable()
 
-    # Access "e.com".
-    cache.access_page("e.com", "EEE")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "e.com", "f.com", "a.com", "c.com" -->(least recently accessed)
-    assert cache.get_pages() == ["e.com", "f.com", "a.com", "c.com"]
+    assert hash_table.put("aaa", 1) == True
+    assert hash_table.get("aaa") == (1, True)
+    assert hash_table.size() == 1
 
-    # Access "a.com".
-    cache.access_page("a.com", "AAA")
-    # The cache is updated to:
-    #   (most recently accessed)<-- "a.com", "e.com", "f.com", "c.com" -->(least recently accessed)
-    assert cache.get_pages() == ["a.com", "e.com", "f.com", "c.com"]
+    assert hash_table.put("bbb", 2) == True
+    assert hash_table.put("ccc", 3) == True
+    assert hash_table.put("ddd", 4) == True
+    assert hash_table.get("aaa") == (1, True)
+    assert hash_table.get("bbb") == (2, True)
+    assert hash_table.get("ccc") == (3, True)
+    assert hash_table.get("ddd") == (4, True)
+    assert hash_table.get("a") == (None, False)
+    assert hash_table.get("aa") == (None, False)
+    assert hash_table.get("aaaa") == (None, False)
+    assert hash_table.size() == 4
 
-    print("Tests passed!")
+    assert hash_table.put("aaa", 11) == False
+    assert hash_table.get("aaa") == (11, True)
+    assert hash_table.size() == 4
+
+    assert hash_table.delete("aaa") == True
+    assert hash_table.get("aaa") == (None, False)
+    assert hash_table.size() == 3
+
+    assert hash_table.delete("a") == False
+    assert hash_table.delete("aa") == False
+    assert hash_table.delete("aaa") == False
+    assert hash_table.delete("aaaa") == False
+
+    assert hash_table.delete("ddd") == True
+    assert hash_table.delete("ccc") == True
+    assert hash_table.delete("bbb") == True
+    assert hash_table.get("aaa") == (None, False)
+    assert hash_table.get("bbb") == (None, False)
+    assert hash_table.get("ccc") == (None, False)
+    assert hash_table.get("ddd") == (None, False)
+    assert hash_table.size() == 0
+
+    assert hash_table.put("abc", 1) == True
+    assert hash_table.put("acb", 2) == True
+    assert hash_table.put("bac", 3) == True
+    assert hash_table.put("bca", 4) == True
+    assert hash_table.put("cab", 5) == True
+    assert hash_table.put("cba", 6) == True
+    assert hash_table.get("abc") == (1, True)
+    assert hash_table.get("acb") == (2, True)
+    assert hash_table.get("bac") == (3, True)
+    assert hash_table.get("bca") == (4, True)
+    assert hash_table.get("cab") == (5, True)
+    assert hash_table.get("cba") == (6, True)
+    assert hash_table.size() == 6
+
+    assert hash_table.delete("abc") == True
+    assert hash_table.delete("cba") == True
+    assert hash_table.delete("bac") == True
+    assert hash_table.delete("bca") == True
+    assert hash_table.delete("acb") == True
+    assert hash_table.delete("cab") == True
+    assert hash_table.size() == 0
+    print("Functional tests passed!")
+
+
+# Test the performance of the hash table.
+#
+# Your goal is to make the hash table work with mostly O(1).
+# If the hash table works with mostly O(1), the execution time of each iteration
+# should not depend on the number of items in the hash table. To achieve the
+# goal, you will need to 1) implement rehashing (Hint: expand / shrink the hash
+# table when the number of items in the hash table hits some threshold) and
+# 2) tweak the hash function (Hint: think about ways to reduce hash conflicts).
+def performance_test():
+    hash_table = HashTable()
+
+    for iteration in range(100):
+        begin = time.time()
+        random.seed(iteration)
+        for i in range(10000):
+            rand = random.randint(0, 100000000)
+            hash_table.put(str(rand), str(rand))
+        random.seed(iteration)
+        for i in range(10000):
+            rand = random.randint(0, 100000000)
+            hash_table.get(str(rand))
+        end = time.time()
+        print("%d %.6f" % (iteration, end - begin))
+
+    for iteration in range(100):
+        random.seed(iteration)
+        for i in range(10000):
+            rand = random.randint(0, 100000000)
+            hash_table.delete(str(rand))
+
+    assert hash_table.size() == 0
+    print("Performance tests passed!")
 
 
 if __name__ == "__main__":
-    cache_test()
+    functional_test()
+    performance_test()
