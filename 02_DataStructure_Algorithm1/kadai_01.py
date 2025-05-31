@@ -31,9 +31,12 @@ import random, sys, time
 def calculate_hash(key):
     assert type(key) == str
     # Note: This is not a good hash function. Do you see why?
-    hash = 0
+    hash = 1
+    # count = 0
     for i in key:
-        hash += ord(i)
+        # hash += ord(i)*10^count
+        # count += 1
+        hash *= ord(i)
     return hash
 
 
