@@ -15,7 +15,7 @@
 
 ### 双方向ポインタを用いる方法(最適✨)
 
-![alt text](image_pointer.png)
+![alt text](image/image_pointer.png)
 
 ###### [ 構造 ]
 
@@ -32,7 +32,7 @@
 
 ### キューのような配列を使う方法
 
-![alt text](image_queue.png)
+![alt text](image/image_queue.png)
 
 ###### [ 方法 ]
 
