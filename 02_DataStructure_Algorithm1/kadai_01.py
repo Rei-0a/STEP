@@ -30,13 +30,11 @@ import random, sys, time
 # Return value: a hash value
 def calculate_hash(key):
     assert type(key) == str
-    # Note: This is not a good hash function. Do you see why?
-    hash = 1
-    # count = 0
+    hash = 0
     for i in key:
-        # hash += ord(i)*10^count
-        # count += 1
-        hash *= ord(i)
+        hash *= 26
+        hash += ord(i)  # べき乗は計算量が多く必要なため、あまり使わないようにする
+        # hash *= ord(i)    # 全ての文字コードの積にするとき
     return hash
 
 
