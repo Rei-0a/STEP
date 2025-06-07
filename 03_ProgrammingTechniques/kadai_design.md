@@ -71,7 +71,8 @@ tokens =
 - `x`、`+ or /`、`y`をそれぞれの計算結果へ変更
 - `index`を-2する()
   このアルゴリズムのイメージ図を以下に示す。
-  `<img src="Image/mult_func.png" alt="mult_func" width="150"/>`
+
+<img src="Image/mult_func.png" alt="mult_func" width="150"/>
 
 ### 課題2
 
@@ -94,7 +95,7 @@ test("((3+4)*(6+1))*((5.2-3.4)*(24/(2*3)))")    # 括弧が複数回存在する
 
 左括弧が見つかったら、`evaluate_inside_bracket`関数を用いて、左括弧がある `index`を渡し、`tokens`内に括弧がない状態となるまで計算するようにした。
 
-<img src="Image/bracket_recursive.png" alt="mult_func" width="150"/>
+<img src="Image/bracket_recursive.png" alt="mult_func" width="200"/>
 
 #### `evaluate_inside_bracket`関数 ( 引数 : 左括弧の `index`)
 
