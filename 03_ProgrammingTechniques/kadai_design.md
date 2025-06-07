@@ -1,6 +1,6 @@
 ## 1. 概要
 
-**目的**：モジュール化された計算機プログラム(link https://docs.google.com/document/d/1H6mhc7Dje0BTeIDAmCIy4GBOUC3Y1uKG8iq4qOq5QYs/edit?tab=t.0)に対して行う一連の拡張（課題1〜4）について、それぞれの設計方針をまとめる。
+**目的**：[モジュール化された計算機プログラム](https://docs.google.com/document/d/1H6mhc7Dje0BTeIDAmCIy4GBOUC3Y1uKG8iq4qOq5QYs/edit?tab=t.0)に対して行う一連の拡張（課題1〜4）について、それぞれの設計方針をまとめる。
 
 ---
 
@@ -80,8 +80,9 @@ tokens =
   - `x`、`+ or /`、`y`の順にデータが格納されている
   - `x`、`+ or /`、`y`をそれぞれの計算結果へ変更
   - `index`を-2する()
-  ![alt text](Image/mult_func.png)
+  <!-- ![alt text](Image/mult_func.png) -->
 
+    <img src="Image/mult_func.png" alt="mult_func" width="100"/>
 
 ### 課題2
 
