@@ -43,23 +43,9 @@
 
 ---
 
-## 4. 要件（Requirements）
+## 4. 提案する設計（Proposed Design）
 
-### 機能要件（Functional Requirements）
-
-- 入力値として〇〇を受け取り、□□を返す
-- 不正な入力が与えられた場合の処理（必要に応じて）
-
-### 非機能要件（Non-Functional Requirements）
-
-- 時間・空間計算量は適切な範囲内（例：O(n)）
-- コードの可読性と保守性を重視
-
----
-
-## 5. 提案する設計（Proposed Design）
-
-現在(足し算引き算小数の機能のみ)は、`1.0 + 2.1 - 3`の場合
+読み取った式は、`1.0 + 2.1 - 3`の場合
 
 ```(python)
 tokens = 
@@ -70,30 +56,52 @@ tokens =
 {'type': 'NUMBER', 'number': 3}]
 ```
 
-のように、1行読み取った後、`tokens`という配列に各要素の型(`type`と `number`)が、格納されている
+となるように、`tokens`という配列に各要素の型(`type`と `number`)が、格納されている
 
 ### 課題1
 
-- 足し算(`PLUS`)引き算(`MINUS`)と同様に、掛け算(`MULT`)と割り算(`DIV`)を読み取る関数を追加。
-- 積と商を求めて`tokens`に格納する`evaluate_multiplication_divide`関数を作成
-  - `index`を`tokens`の長さ
-  - `x`、`+ or /`、`y`の順にデータが格納されている
-  - `x`、`+ or /`、`y`をそれぞれの計算結果へ変更
-  - `index`を-2する()
-  <!-- ![alt text](Image/mult_func.png) -->
+足し算(`PLUS`)引き算(`MINUS`)と同様に、掛け算(`MULT`)と割り算(`DIV`)を読み取る関数を追加。
 
-    <img src="Image/mult_func.png" alt="mult_func" width="100"/>
+また、積と商を求めて `tokens`に格納する `evaluate_multiplication_divide`関数を作成した。
+
+#### `evaluate_multiplication_divide`関数
+
+- `index`を `tokens`の長さ
+- `x`、`+ or /`、`y`の順にデータが格納されている
+- `x`、`+ or /`、`y`をそれぞれの計算結果へ変更
+- `index`を-2する()
+  このアルゴリズムのイメージ図を以下に示す。
+  `<img src="Image/mult_func.png" alt="mult_func" width="150"/>`
 
 ### 課題2
 
 テストケースを以下のように追加した。
-```
+
+```(python)
 test("4-2*3+1+1/2") # 掛け算割り算
 test("3*2*4*1") # 何回もかけたり割ったりする
 test("2/0")   # 0で割る
 ```
 
+課題3の後に追加したテストケースは以下である。
+
+```(python)
+test("(2+3)*(4-6)") # 括弧の実装
+test("((3+4)*(6+1))*((5.2-3.4)*(24/(2*3)))")    # 括弧が複数回存在するとき
+```
+
 ### 課題3
+
+左括弧が見つかったら、`evaluate_inside_bracket`関数を用いて、左括弧がある `index`を渡し、`tokens`内に括弧がない状態となるまで計算するようにした。
+
+<img src="Image/bracket_recursive.png" alt="mult_func" width="150"/>
+
+#### `evaluate_inside_bracket`関数 ( 引数 : 左括弧の `index`)
+
+1. 右括弧が見つかるまで、左括弧の次の文字から一文字ずつ探索していく
+2. もし左括弧が見つかれば、そのときの `index`を `evaluate_inside_bracket`関数へ渡す
+3. そうでなければ、探索した `tokens[index]`を `bracket_tokens`配列内に保存
+4. 右括弧が見つかったら、`bracket_tokens`内を計算し、括弧内全てを置き換える
 
 ### 課題4
 
