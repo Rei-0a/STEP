@@ -144,8 +144,6 @@ def evaluate_inside_bracket(tokens, LeftBracketIndex):
     while tokens[index]['type'] != 'RIGHT_BRACKET':
         if tokens[index]['type'] == 'LEFT_BRACKET': # 再帰的に処理
             evaluate_inside_bracket(tokens, index)
-        elif tokens[index]['type'] == 'ABS':    # abs関数が見つかったとき
-            evaluate_abs_func(tokens, index)
         bracket_tokens.append(tokens[index])
         index += 1
     tokens[LeftBracketIndex : index + 1] = [{'type': 'NUMBER', 'number': evaluate_four_operation(bracket_tokens)}]  # 左括弧～右括弧までを、その中を計算したトークンで置き換える
