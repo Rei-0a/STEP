@@ -135,49 +135,46 @@ def evaluate_four_operations(tokens):
     evaluate_multiplication_divide(tokens)
     return evaluate_plus_minus(tokens)
 
-# 引数：tokens、左括弧のindex
-# 括弧の中身を計算する関数。式内部に括弧があったら、再帰的にこの関数を呼び出す。
 def evaluate_inside_bracket(tokens, LeftBracketIndex):
     index = LeftBracketIndex + 1    # 左括弧の次の文字から探索
-    RightBracketIndex = 0   # 右括弧の位置を保存
-    bracket_tokens = [] # 括弧内の数式を保存
-    # 右括弧が見つかるまで、bracket_tokensに入れる
+
     while tokens[index]['type'] != 'RIGHT_BRACKET':
         if tokens[index]['type'] == 'LEFT_BRACKET': # 再帰的に処理
             evaluate_inside_bracket(tokens, index)
-        bracket_tokens.append(tokens[index])
+        elif tokens[index]['type'] == 'FUNC':
+            evaluate_func(tokens, index)
         index += 1
-    tokens[LeftBracketIndex : index + 1] = [{'type': 'NUMBER', 'number': evaluate_four_operations(bracket_tokens)}]  # 左括弧～右括弧までを、その中を計算したトークンで置き換える
+
+    tokens[LeftBracketIndex : index + 1] = [{'type': 'NUMBER', 'number': evaluate_four_operations(tokens[LeftBracketIndex+1 : index ])}]  # 左括弧～右括弧までを、その中を計算したトークンで置き換える
+
     return tokens
 
 # 関数のindexを渡すと、その括弧の対の右括弧までを計算する
 def evaluate_func(tokens, funcIndex):
     index = funcIndex + 1   # 関数の左括弧
-    func_tokens = []
 
     while tokens[index-1]['type'] != 'RIGHT_BRACKET':   # 右括弧が見つかるまで繰り返す
-        if tokens[index]['type'] == 'FUNC': # 再度関数が来た時は再帰
+        # 再度関数が来た時はこの関数を再帰する
+        if tokens[index]['type'] == 'FUNC':
             evaluate_func(tokens,index)
-        elif tokens[index-1]['type'] != 'FUNC' and tokens[index]['type'] == 'LEFT_BRACKET': # 関数内に、関数以外の括弧を含む式があったとき
+
+        # 関数内に、関数以外の括弧を含む式があったとき
+        elif tokens[index-1]['type'] != 'FUNC' and tokens[index]['type'] == 'LEFT_BRACKET':
             evaluate_inside_bracket(tokens,index)
-        func_tokens.append(tokens[index])
         index += 1
-    
-    # ここまで来た時、func()の括弧の中には関数は入っていないはず
-    # print(func_tokens)
-    x = evaluate_inside_bracket(func_tokens,0)
-    x = x[0]['number']
-    
+
+    tokens[funcIndex+1:index] = evaluate_inside_bracket(tokens[funcIndex+1:index],0)    # 括弧の中の数字を計算する 例) abs ( 3 * - 5 + 1 )->abs -14
+    x = tokens[funcIndex+1]['number']   # 関数の括弧内の値
+
     if tokens[funcIndex]['name'] == 'ABS':
-        tokens[funcIndex : index] = [{'type': 'NUMBER', 'number': abs(x)}]
+        tokens[funcIndex : funcIndex+2] = [{'type': 'NUMBER', 'number': abs(x)}]
     elif tokens[funcIndex]['name'] == 'INT':
-        tokens[funcIndex : index] = [{'type': 'NUMBER', 'number': int(x)}]
+        tokens[funcIndex : funcIndex+2] = [{'type': 'NUMBER', 'number': int(x)}]
     elif tokens[funcIndex]['name'] == 'ROUND':
-        tokens[funcIndex : index] = [{'type': 'NUMBER', 'number': round(x)}]
-    
+        tokens[funcIndex : funcIndex+2] = [{'type': 'NUMBER', 'number': round(x)}]
     return tokens
 
-
+# この関数にtokensをいれると、返し値として、答えが返ってくる
 def evaluate(tokens):
 
     index = 0
@@ -187,7 +184,6 @@ def evaluate(tokens):
             tokens = evaluate_func(tokens,index)
         index += 1
 
-    # evaluate_func(tokens,0)
     index = 0
     # ()内→積商→和差の順に計算
     while index < len(tokens):
@@ -214,9 +210,13 @@ def test(line):
 # Add more tests to this function :)
 def run_test():
     print("==== Test started! ====")
-    test("abs(int(-2.34)*(-1))+round(2.34*abs(int(-45/4)))")    # 全部入れ子構造のとき
-    test("abs(2-3)+round(234.342)/int(-342)")  
-    test("(abs(-2.3-abs(-3))+1)*(abs(-2*(-4))+2)")   # 絶対値関数の追加
+    test("abs(-4*(int(4.3)))")  # 括弧の中に関数があるとき
+    test("abs(int(2.34)*(-1))+round(2.34*abs(int(-45/4)))")    # 全部入れ子構造のとき
+    test("abs(2-3)+round(234.342+5/2)/int(-342)")  # 関数の中で計算を行っているとき
+    test("(abs(-2.3-abs(-3))+1)*(abs(-2*(-4))+2)")   # 絶対値の入れ子構造
+    test("abs(-4.7)")   # abs関数の実装
+    test("int(4.24)")   # int関数の実装
+    test("round(2.35)") # round関数の実装
     test("(2+3)*(4-6)") # 括弧の実装
     test("((3+4)*(6+1))*((5.2-3.4)*(24/(2*3)))")    # 括弧が複数回存在するとき
     test("4-2*3+1+1/2") # 掛け算割り算(kadai1)
@@ -229,13 +229,6 @@ def run_test():
     print("==== Test finished! ====\n")
 
 run_test()
-
-# while True:
-#     print('> ', end="")
-#     line = input()
-#     tokens = tokenize(line)
-#     answer = evaluate(tokens)
-#     print("answer = %f\n" % answer)
 
 while True:
     print('> ', end="")
