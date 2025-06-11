@@ -131,11 +131,12 @@ def evaluate_plus_minus(tokens):
     return answer
 
 # 四則演算
-def evaluate_four_operation(tokens):
+def evaluate_four_operations(tokens):
     evaluate_multiplication_divide(tokens)
     return evaluate_plus_minus(tokens)
 
-# 左括弧のindexを渡すと、その括弧の対の右括弧までを計算する
+# 引数：tokens、左括弧のindex
+# 括弧の中身を計算する関数。式内部に括弧があったら、再帰的にこの関数を呼び出す。
 def evaluate_inside_bracket(tokens, LeftBracketIndex):
     index = LeftBracketIndex + 1    # 左括弧の次の文字から探索
     RightBracketIndex = 0   # 右括弧の位置を保存
@@ -146,7 +147,7 @@ def evaluate_inside_bracket(tokens, LeftBracketIndex):
             evaluate_inside_bracket(tokens, index)
         bracket_tokens.append(tokens[index])
         index += 1
-    tokens[LeftBracketIndex : index + 1] = [{'type': 'NUMBER', 'number': evaluate_four_operation(bracket_tokens)}]  # 左括弧～右括弧までを、その中を計算したトークンで置き換える
+    tokens[LeftBracketIndex : index + 1] = [{'type': 'NUMBER', 'number': evaluate_four_operations(bracket_tokens)}]  # 左括弧～右括弧までを、その中を計算したトークンで置き換える
     return tokens
 
 # 関数のindexを渡すと、その括弧の対の右括弧までを計算する
@@ -195,7 +196,7 @@ def evaluate(tokens):
             tokens = evaluate_inside_bracket(tokens,index)
         index += 1
 
-    return evaluate_four_operation(tokens)
+    return evaluate_four_operations(tokens)
 
 
 def test(line):

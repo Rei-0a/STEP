@@ -95,9 +95,12 @@ tokens =
 テストケースを以下のように追加した。
 
 ```(python)
-test("4-2*3+1+1/2") # 掛け算割り算
-test("-3*(-2)*4*1") # 何回もかけたり割ったりする
-test("2/0")   # 0で割る
+test("4-2*3+1+1/2") # 掛け算割り算入り混じっている
+test("3*2/4*1") # 何回もかけたり割ったりする
+test("2/0")   # 0で割る(自分で定義した仕様)
+test("0.1*100/2+5") # 小数点をいれてみる
+test("1+2*3")   # 掛け算と足し算の順序
+test("2*3") # 掛け算
 ```
 
 課題3の後に追加したテストケースは以下である。
@@ -117,11 +120,7 @@ test("abs(2-3)+round(234.342)/int(-342)")  # 全関数を用いる
 ### 課題3
 
 左括弧が見つかったら、`evaluate_inside_bracket`関数(括弧の内部を計算する関数)を用いて、`tokens`内に括弧がない状態となるまで計算するようにした。
-その後、`evaluate_four_operation`関数によって、`tokens`内の計算を行い、答えを出した。  ここを書く！！
-
-<div align="center">
-  <img src="Image/bracket_recursive.png" alt="mult_func" width="600"/>
-</div>
+その後、`evaluate_four_operation`関数によって、`tokens`内の計算を行い、答えを出した。 
 
 #### `evaluate_inside_bracket`関数 ( 引数 : 左括弧の `index`)
 
@@ -130,7 +129,11 @@ test("abs(2-3)+round(234.342)/int(-342)")  # 全関数を用いる
 3. そうでなければ、探索した `tokens[index]`を `bracket_tokens`配列内に保存
 4. 右括弧が見つかったら、`bracket_tokens`内を計算し、括弧内全てを置き換える
 
+この関数のイメージ図を以下に示す。
 
+<div align="center">
+  <img src="Image/bracket_recursive.png" alt="mult_func" width="600"/>
+</div>
 
 ### 課題4
 
