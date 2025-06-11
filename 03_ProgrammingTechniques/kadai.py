@@ -68,25 +68,28 @@ def tokenize(line):
         tokens.append(token)
     return tokens
 
-def evaluate_multiplication_divide(tokens):
-    index = 1
+# token内の掛け算割り算を行う関数
+def evaluate_multiplication_division(tokens):
+    index = 1   # 2つ目のtoken以降を探索する
     while index < len(tokens):
+        wasEvaluated = False    # 掛け算や割り算の処理があったかどうか
         if tokens[index]['type'] == 'NUMBER':
-            
             if tokens[index - 1]['type'] == 'MULT':
-                mult = tokens[index-2]['number'] * tokens[index]['number']
-                tokens[index-2:index+1] = [{'type': 'NUMBER', 'number': mult}]
-                index -= 2
+                ans = tokens[index-2]['number'] * tokens[index]['number']
+                wasEvaluated = True
             elif tokens[index - 1]['type'] == 'DIV':
                 if tokens[index] == 0:
                     raise ZeroDivisionError("division by zero")
-                div = tokens[index-2]['number'] / tokens[index]['number']
-                tokens[index-2:index+1] = [{'type': 'NUMBER', 'number': div}]
+                ans = tokens[index-2]['number'] / tokens[index]['number']
+                wasEvaluated = True
+            if wasEvaluated:
+                tokens[index-2:index+1] = [{'type': 'NUMBER', 'number': ans}]
                 index -=2
         index += 1
         
     return tokens
 
+# tokens内の足し算引き算を行う関数
 def evaluate_plus_minus(tokens):
     answer = 0
     tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token
@@ -103,46 +106,35 @@ def evaluate_plus_minus(tokens):
         index += 1
     return answer
 
-def evaluate_four_operation(tokens):
-    evaluate_multiplication_divide(tokens)
+# 引数：tokens
+# tokens内の四則演算を行い、その答えをreturnする関数
+def evaluate_four_operations(tokens):
+    evaluate_multiplication_division(tokens)
     return evaluate_plus_minus(tokens)
 
-# 左括弧のindex
+# 引数：tokens、左括弧のindex
+# 括弧の中身を計算する関数。式内部に括弧があったら、再帰的にこの関数を呼び出す。
 def evaluate_inside_bracket(tokens, LeftBracketIndex):
     index = LeftBracketIndex+1
     RightBracketIndex = 0
-    bracket_tokens = []
+    bracket_tokens = [] #括弧内の数式を保存するための配列（これなくてもいけるかも）
     while tokens[index]['type'] != 'RIGHT_BRACKET':
         if tokens[index]['type'] == 'LEFT_BRACKET':
             evaluate_inside_bracket(tokens, index)
         bracket_tokens.append(tokens[index])
         index += 1
         RightBracketIndex = index
-    tokens[LeftBracketIndex : RightBracketIndex+1] = [{'type': 'NUMBER', 'number': evaluate_four_operation(bracket_tokens)}]
+    tokens[LeftBracketIndex : RightBracketIndex+1] = [{'type': 'NUMBER', 'number': evaluate_four_operations(bracket_tokens)}]
     return tokens
-# def evaluate_inside_bracket(tokens):
-#     index = 0
-#     while index < len(tokens):
-#         LeftBracketIndex = 0
-#         RightBracketIndex = 0
-#         if tokens[index]['type'] == 'LEFT_BRACKET':
-#             LeftBracketIndex = index    # 左括弧が始まるindex
-#             index += 1
-#             bracket_tokens = []
-#             while tokens[index]['type'] != 'RIGHT_BRACKET':
-#                 bracket_tokens.append(tokens[index])
-#                 print("blacket",tokens[index])
-#                 index += 1
-#             RightBracketIndex = index
-#             tokens[LeftBracketIndex : RightBracketIndex+1] = [{'type': 'NUMBER', 'number': evaluate_four_operation(bracket_tokens)}]
 
+# 括弧を含んだtokens内の計算を行い、答えをreturnする関数
 def evaluate(tokens):
     index = 0
     while index < len(tokens):
         if tokens[index]['type'] == 'LEFT_BRACKET':
             tokens = evaluate_inside_bracket(tokens,index)
         index += 1
-    return evaluate_four_operation(tokens)
+    return evaluate_four_operations(tokens)
 
 
 def test(line):
@@ -164,8 +156,13 @@ def run_test():
     test("((3+4)*(6+1))*((5.2-3.4)*(24/(2*3)))")    # 括弧が複数回存在するとき
     test("4-2*3+1+1/2") # 掛け算割り算(kadai1)
     test("3*2*4*1") # 何回もかけたり割ったりする(kadai1)
-    test("2/0")   # 0で割る(kadai1)
-    test("1/2+2*4*3")
+    test("2/0")   # 0で割る(kadai1)(自分)
+    test("2*2/4*3")
+    test("0.1*100/2+5")
+    test("1*2+3*4")
+    test("1+2*3")
+    test("2*3")
+    test("2")
     test("1+2")
     test("1.0+2.1-3")
     print("==== Test finished! ====\n")

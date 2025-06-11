@@ -69,19 +69,26 @@ tokens =
 
 足し算(`PLUS`)引き算(`MINUS`)と同様に、掛け算(`MULT`)と割り算(`DIV`)を読み取る関数を追加。
 
-また、積と商を求めて `tokens`に格納する `evaluate_multiplication_divide`関数を作成した。
+また、積と商を求めて `tokens`に格納する `evaluate_multiplication_division`関数を作成した。
 
-#### `evaluate_multiplication_divide`関数
+`tokens`内の計算を、掛け算、割り算をしてから足し算引き算をするように、`evaluate_four_operations`関数を作成した。
 
-- `index`を `tokens`の長さ
-- `x`、`+ or /`、`y`の順にデータが格納されている
-- `x`、`+ or /`、`y`をそれぞれの計算結果へ変更
-- `index`を-2する()
-  このアルゴリズムのイメージ図を以下に示す。
+#### `evaluate_multiplication_division`関数
+
+- `index`を `tokens`の長さまで1つずつ動かす
+- `x`、`* or /`、`y`の順にデータが格納されているとき
+  - `x`、`* or /`、`y`をそれぞれの計算結果へ変更
+  - `index`を-2する
+
+このアルゴリズムのイメージ図を以下に示す。
 
 <div align="center">
 <img src="Image/mult_func.png" alt="mult_func" width="250"/>
 </div>
+
+#### `evaluate_four_operations`関数
+- `evaluate_multiplication_division`関数に`token`を入れることで、`token`を掛け算や割り算のない式にする
+- `evaluate_plus_minus`関数に`token`を入れることで、`token`内の計算を行い、答えを出す
 
 ### 課題2
 
@@ -109,7 +116,8 @@ test("abs(2-3)+round(234.342)/int(-342)")  # 全関数を用いる
 
 ### 課題3
 
-左括弧が見つかったら、`evaluate_inside_bracket`関数を用いて、左括弧がある `index`を渡し、`tokens`内に括弧がない状態となるまで計算するようにした。
+左括弧が見つかったら、`evaluate_inside_bracket`関数(括弧の内部を計算する関数)を用いて、`tokens`内に括弧がない状態となるまで計算するようにした。
+その後、`evaluate_four_operation`関数によって、`tokens`内の計算を行い、答えを出した。  ここを書く！！
 
 <div align="center">
   <img src="Image/bracket_recursive.png" alt="mult_func" width="600"/>
@@ -121,6 +129,8 @@ test("abs(2-3)+round(234.342)/int(-342)")  # 全関数を用いる
 2. もし左括弧が見つかれば、そのときの `index`を `evaluate_inside_bracket`関数へ渡す
 3. そうでなければ、探索した `tokens[index]`を `bracket_tokens`配列内に保存
 4. 右括弧が見つかったら、`bracket_tokens`内を計算し、括弧内全てを置き換える
+
+
 
 ### 課題4
 

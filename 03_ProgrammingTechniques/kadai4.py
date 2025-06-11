@@ -223,6 +223,7 @@ def run_test():
     test("2/0")   # 0で割る(kadai1)
     test("1/2+2*4*3")
     test("1+2")
+    test("3")
     test("1.0+2.1-3")
     print("==== Test finished! ====\n")
 
