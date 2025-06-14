@@ -134,13 +134,13 @@ class Wikipedia:
                     visited[child] = True
                     # previous[child] = [node,cost]
                     previous[child] = node
-            # print(previous)
+
         if goal_id in previous:
             ans = self.find_path(goal_id,previous)
             print(" -> ".join(self.titles[item] for item in ans))
         else:
             print("cannot find")
-        pass
+        return True
 
 
     # Homework #2: Calculate the page ranks and print the most popular pages.
