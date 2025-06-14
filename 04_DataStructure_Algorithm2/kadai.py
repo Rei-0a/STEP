@@ -76,13 +76,25 @@ class Wikipedia:
                 return page_id
         return None
     
-    # A helper function to find a path.
-    def find_path(self, goal_id, previous):
+    # A helper function to find a path with cost.
+    def find_path_withCost(self, goal_id, previous):
         path = []
         node = goal_id
         path.append(node)
         while previous[node][0] != None:
             node = previous[node][0]
+            path.append(node)
+        path.reverse()
+        return path
+    
+    
+    # A helper function to find a path.
+    def find_path(self, goal_id, previous):
+        path = []
+        node = goal_id
+        path.append(node)
+        while previous[node] != None:
+            node = previous[node]
             path.append(node)
         path.reverse()
         return path
@@ -94,47 +106,40 @@ class Wikipedia:
     def find_shortest_path(self, start, goal):
         # BFSに工夫を入れる
 
-        start_id = self.find_id_by_title(start)    # 与えられたタイトルのpageIDを探す
-        goal_id = self.find_id_by_title(goal)
+        start_id = self.find_id_by_title(start)    # 与えられたstartタイトルのpageIDを探す
+        goal_id = self.find_id_by_title(goal)      # 与えられた goalタイトルのpageIDを探す
         if start_id == None or goal_id == None:
+            print(start_id,"or",goal_id,"のどちらかが存在しません")
             return False
 
         queue = collections.deque()
-        visited = {}
-        previous = {}
+        visited = {}    # 既に探索したページを保管するところ(openリスト)
+        previous = {}   # 探索するルート(closeリスト)
 
         queue.append(start_id)
 
-        cost = 0
+        # cost = 0
         visited[start_id] = True
-        previous[start_id] = [None,cost]   # start_idの前とスコアを保存
+        # previous[start_id] = [None,cost]
+        previous[start_id] = None
 
         while len(queue):
             node = queue.popleft()
-            if node == goal:
+            if node == goal_id:
                 break
             for child in self.links[node]:
-                
-                cost = previous[node][1] + 1
+                # cost = previous[node][1] + 1
                 if not child in visited:
                     queue.append(child)
                     visited[child] = True
-                    previous[child] = [node,cost]
+                    # previous[child] = [node,cost]
+                    previous[child] = node
             # print(previous)
-
         if goal_id in previous:
             ans = self.find_path(goal_id,previous)
             print(" -> ".join(self.titles[item] for item in ans))
         else:
             print("cannot find")
-        
-        # if goal_id in previous:
-        #     print(" -> ".join(self.find_path(goal_id, previous)))
-        # else:
-        #     print("Not found")
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
         pass
 
 
@@ -186,7 +191,7 @@ if __name__ == "__main__":
     # wikipedia.find_most_linked_pages()
     # Homework #1
     wikipedia.find_shortest_path("渋谷", "小野妹子")
-    # wikipedia.find_shortest_path("B", "F")
+    wikipedia.find_shortest_path("A", "F")
     # Homework #2
     wikipedia.find_most_popular_pages()
     # Homework #3 (optional)
