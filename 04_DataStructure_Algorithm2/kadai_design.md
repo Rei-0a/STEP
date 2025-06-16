@@ -108,6 +108,53 @@ self.links = {
 
 ### 課題2
 
-## 5. 代替案の検討
+`find_most_popular_pages`関数を用いて、`page_rank`がもっとも高い、popularなページを出力した。
+
+#### `find_most_popular_pages`関数
+
+1. 辞書構造の初期化
+各ページのID(`title_key`)に対して、初期のページランクを`1`に設定。また、ページランクを更新するための辞書`new_page_ranks`も作成。
+- `old_page_ranks[title_key] = 1`
+- `new_page_ranks[title_key] = 0`
+
+2. ループで用いる変数の初期化
+- `new_page_ranks`辞書を全て0にする
+- 全体に分配するためのページランクを保存する変数`all_rank_share`を0にする
+3. 各ページに対して以下を繰り返す
+- そのページからのリンクがあるとき
+  - ページランクの85%を子ページに分配。`new_page_ranks`にいれておく。
+  - 残り15%のページランクを`all_rank_share`に保存しておく
+- そのページからのリンクがないとき
+  - `all_rank_share`にそのページランクを100%保存しておく
+
+4. 各ページに対して以下を繰り返す
+- `new_page_ranks`の値に、`all_rank_share`を分配(全ページ数で割った値を足す)
+- `delta`に、`new_page_ranks`と`old_page_ranks`の差分の二乗を足す
+
+5. `delta < 0.01`となれば、ループを終了。そうでなければ2. に戻る
+
+6. `new_page_ranks`の中から、値が最大になるものを取り出し、出力する
+
+## 5. 実行結果
+
+`small`のとき
+A -> B -> C -> F
+Most popular page by PageRank:
+C: 1.373070
+
+`medium`のとき
+渋谷 -> ギャルサー_(テレビドラマ) -> 小野妹子
+Most popular page by PageRank:
+英語: 1507.297701
+
+
+`large`のとき
+
+渋谷 -> ギャルサー_(テレビドラマ) -> 小野妹子
+Most popular page by PageRank:
+英語: 4576.828626
+<!-- ## 5. 代替案の検討 -->
 
 ## 6. Open Questions
+
+`medium`も`large`もとてつもなく時間がかかるが、これはしょうがないことなのか？

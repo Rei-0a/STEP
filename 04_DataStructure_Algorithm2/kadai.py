@@ -145,9 +145,43 @@ class Wikipedia:
 
     # Homework #2: Calculate the page ranks and print the most popular pages.
     def find_most_popular_pages(self):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
+        old_page_ranks = {}
+        new_page_ranks = {}
+        for title_key in self.titles:
+            old_page_ranks[title_key] = 1
+            new_page_ranks[title_key] = 0
+
+        page_ranks_updated = True
+
+        while page_ranks_updated:
+            for title_key in self.titles:   # 新しい辞書を全て0にする
+                new_page_ranks[title_key] = 0
+            all_rank_share = 0
+            # print(old_page_ranks)
+            for from_id in self.links:  # 各ページを探索(from_id)して
+                if len(self.links[from_id]) != 0:   # 子ノードが存在するとき
+                    rank_share = old_page_ranks[from_id]*0.85 / len(self.links[from_id])   # そのノードから隣接ノードに割り振る値を計算
+                    all_rank_share += 0.15 * old_page_ranks[from_id]    # 残りの15%を全ノードに分配
+                    # print(rank_share,"=" , old_page_ranks[from_id],"/",self.links[from_id])
+                    for to_id in self.links[from_id]:   # 各子ノード(to_id)へ
+                        new_page_ranks[to_id] += rank_share # 値を割り振る
+                else:   # 子ノードがないとき
+                    all_rank_share += old_page_ranks[from_id]   # 全てに分配する
+            delta = 0   # oldとnewでどれだけ変更があったかを保存
+            for key in self.titles:
+                new_page_ranks[key] += all_rank_share / len(self.links)  # 全ノードに分配する
+                delta += (new_page_ranks[key]-old_page_ranks[key])**2
+            
+            if delta < 0.01:    # oldとnewで変更が少なければ、ページランクの更新を終わらせる
+                page_ranks_updated = False
+
+            old_page_ranks = new_page_ranks.copy() # 古いページランクを新しいものに書き換える
+            # print(new_page_ranks)
+        
+        max_id = max(new_page_ranks, key=new_page_ranks.get)
+        print("Most popular page by PageRank:")
+        print(f"{self.titles[max_id]}: {new_page_ranks[max_id]:.6f}")
+
         pass
 
 
