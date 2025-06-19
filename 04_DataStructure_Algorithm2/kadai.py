@@ -178,10 +178,11 @@ class Wikipedia:
             old_page_ranks = new_page_ranks.copy() # 古いページランクを新しいものに書き換える
             # print(new_page_ranks)
         
-        max_id = max(new_page_ranks, key=new_page_ranks.get)
+        top_ten = sorted(new_page_ranks, key=new_page_ranks.get, reverse=True)[:10]
         print("Most popular page by PageRank:")
-        print(f"{self.titles[max_id]}: {new_page_ranks[max_id]:.6f}")
-
+        for page_id in top_ten:
+            print(self.titles[page_id],new_page_ranks[page_id])
+            
         pass
 
 
