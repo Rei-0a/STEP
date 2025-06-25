@@ -77,6 +77,7 @@ self.links = {
 
 `start`のページから `goal`のページまで、最短経路を探索する。
 そのために、OPENリストをキュー型にするBFS(幅優先探索)を用いた。その探索を行う関数として、`find_shortest_path`関数を作成した。
+`start`と`goal`はページタイトルを引数としている。
 
 ##### 'find_shortest_path'関数(引数：start, goal)
 
@@ -87,7 +88,7 @@ self.links = {
 2. 探索用データ構造の初期化
 
 - `visited` : 今まで訪れたページを保存する辞書
-- `previous` : 探索待ちのページを保存する辞書
+- `previous` : 親ノードを保存する辞書
 
 3. キューの初期手順
 
@@ -133,9 +134,9 @@ self.links = {
 4. 各ページに対して以下を繰り返す
 
 - `new_page_ranks`の値に、`all_rank_share`を分配(全ページ数で割った値を足す)
-- `delta`に、`new_page_ranks`と `old_page_ranks`の差分の二乗を足す
+- `delta`に、`new_page_ranks`と `old_page_ranks`の各idのページランクの値の差分をとったものに二乗した値を足す
 
-5. `delta < 0.01`となれば、ループを終了。そうでなければ2. に戻る
+5. `delta < 0.01`となれば、ループを終了。そうでなければ、`old_page_ranks`を`new_page_ranks`に更新し、2. に戻る
 6. `new_page_ranks`の中から、値が大きいものから10個を取り出し、出力する
 
 ## 5. 実行結果
@@ -181,3 +182,11 @@ SUDOC_(識別子) 1518.7882366990211
 ## 6. Open Questions
 
 `medium`も `large`もとてつもなく時間がかかるが、これはしょうがないことなのか？
+
+## 7. 計算量
+時間：`O(E)`
+空間:`O(V)`
+
+負のコストが辺に入っていたら、ベルマンフォード法がある！
+
+delta を0にするのは、コンピュータの整数の仕組み上、とても難しい！

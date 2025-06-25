@@ -113,8 +113,8 @@ class Wikipedia:
             return False
 
         queue = collections.deque()
-        visited = {}    # 既に探索したページを保管するところ(openリスト)
-        previous = {}   # 探索するルート(closeリスト)
+        visited = {}    # 既に探索したページを保管するところ
+        previous = {}   # 探索するルート
 
         queue.append(start_id)
 
