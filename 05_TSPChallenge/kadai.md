@@ -2,12 +2,13 @@
 
 最短経路問題について考える。
 
+`http://localhost:8000/visualizer/build/default/`を用いてビジュアライズ可能。
+
 ## 2. 各課題の内容
 
 TSPを実際に実装して、様々なアルゴリズムや工夫をしてみる。
 
 [サンプルコード](https://github.com/hayatoito/google-step-tsp)を用いた。
-
 
 ## 3. 提案する設計
 
@@ -24,82 +25,37 @@ TSPを実際に実装して、様々なアルゴリズムや工夫をしてみ�
 
 ルート内に、左のようなクロスが発生してしまっているとき、[A,D,X,B,C] ===> [A,B,Xの逆,D,C]のように、その紐をほどき、クロスをなくした。
 
-1. 上記図のB->C　エッジを探索
-2. A -> D とB -> C　が異なるエッジのとき
-    (A->DとB->Cの長さ) > (A->BとC->Dの長さ)なら、D,X,Bの配列を、B,Xの逆順, Dの順に格納する
-    
+1. 上記図のA->D　エッジを探索
+  a. 上記図のB->C　エッジを探索
+  b. A -> D とB -> C　が異なるエッジのとき
+     (A->DとB->Cの長さ) > (A->BとC->Dの長さ)なら、D,X,Bの配列を、B,Xの逆順, Dの順に格納する
+2. 1. を、変更がなくなるまで繰り返す 
 
-### 課題1
+## 4. 実行結果
 
-`start`のページから `goal`のページまで、最短経路を探索する。
-そのために、OPENリストをキュー型にするBFS(幅優先探索)を用いた。その探索を行う関数として、`find_shortest_path`関数を作成した。
-`start`と `goal`はページタイトルを引数としている。
+### 1. 2-opt法を用いたとき
 
-##### 'find_shortest_path'関数(引数：start, goal)
 
-1. ページIDの取得
+<!-- 1行目：4枚 -->
 
-- 与えられた `start`と `goal`のページタイトルから、それぞれ対応するページID（start_id, goal_id）を取得する
+<p align="center">
+  <img src="Image/2opt_0.png" width="200"/>
+  <img src="Image/2opt_1.png" width="200"/>
+  <img src="Image/2opt_2.png" width="200"/>
+  <img src="Image/2opt_3.png" width="200"/>
+</p>
 
-2. 探索用データ構造の初期化
+<!-- 2行目：3枚 -->
 
-- `visited` : 今まで訪れたページを保存する辞書
-- `previous` : 親ノードを保存する辞書
+<p align="center">
+  <img src="Image/2opt_4.png" width="200"/>
+  <img src="Image/2opt_5.png" width="200"/>
+  <img src="Image/2opt_6.png" width="200"/>
+</p>
 
-3. キューの初期手順
-
-- `start_id`をキューに追加
-- `visited`に `start_id`を追加
-- `previous`に `start_id: None`を追加(スタートのページなので、親はいない)
-
-4. キューが空になるまで以下を繰り返す
-   a. キューの先頭からページID(`node`)を取り出す
-   b. `node`が `goal`と一致するなら、5. へ(探索完了)
-   c. `node`のリンクにあるページ(子ページ)を確認
-   - `viseted`にその子ページがなければ、
-     - キューにその子ページをいれる
-     - `visited`へ入れる
-     - `previous[child]=node`として、親ノードを保存
-5. `previous`の `key`に `goal_id`があれば、`previpus`内を辿って経路を出力する。なければ、存在しないと出力する。
-
-### 課題2
-
-`find_most_popular_pages`関数を用いて、`page_rank`がもっとも高い、popularなページを出力した。
-
-#### `find_most_popular_pages`関数
-
-1. 辞書構造の初期化
-   各ページのID(`title_key`)に対して、初期のページランクを `1`に設定。また、ページランクを更新するための辞書 `new_page_ranks`も作成。
-
-- `old_page_ranks[title_key] = 1`
-- `new_page_ranks[title_key] = 0`
-
-2. ループで用いる変数の初期化
-
-- `new_page_ranks`辞書を全て0にする
-- 全体に分配するためのページランクを保存する変数 `all_rank_share`を0にする
-
-3. 各ページに対して以下を繰り返す
-
-- そのページからのリンクがあるとき
-  - ページランクの85%を子ページに分配。`new_page_ranks`にいれておく。
-  - 残り15%のページランクを `all_rank_share`に保存しておく
-- そのページからのリンクがないとき
-  - `all_rank_share`にそのページランクを100%保存しておく
-
-4. 各ページに対して以下を繰り返す
-
-- `new_page_ranks`の値に、`all_rank_share`を分配(全ページ数で割った値を足す)
-- `delta`に、`new_page_ranks`と `old_page_ranks`の各idのページランクの値の差分をとったものに二乗した値を足す
-
-5. `delta < 0.01`となれば、ループを終了。そうでなければ、`old_page_ranks`を `new_page_ranks`に更新し、2. に戻る
-6. `new_page_ranks`の中から、値が大きいものから10個を取り出し、出力する
-
-## 5. 実行結果
 
 ## 6. Open Questions
 
-`medium`も `large`もとてつもなく時間がかかるが、これはしょうがないことなのか？
 
 ## 7. 計算量
 

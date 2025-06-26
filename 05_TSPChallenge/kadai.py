@@ -36,7 +36,6 @@ def solve(cities):
     #   C     D         /   C ←----- D
     # [A,D,X,B,C] ===> [A,B,Xの逆,D,C]
 
-    changed = False
     while True:
         changed = False
         for a_index in range(N):  # tourのエッジをそれぞれ見ていく。a_indexは、何番目に通るエッジかを表している。
@@ -49,12 +48,9 @@ def solve(cities):
                     c = tour[(b_index+1) % N]
 
                     if (dist[a][d] + dist[b][c]) > (dist[a][b] + dist[c][d]):   # (A->DとB->Cの長さ) > (A->BとC->Dの長さ)のとき、
-                        print(a,d,'->',b,c)
+                        # print(a,d,'->',b,c)
                         tour[a_index+1:b_index+1] = tour[a_index+1:b_index+1][::-1]
-                        # changed = True
-                        # break
-            # if changed == True:
-            #     break
+
         if changed == False:
             break
 
