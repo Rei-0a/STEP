@@ -77,7 +77,7 @@ def calculate_tour_length(tour, dist):
 def initialize_weight_matrix(tour):
     N = len(tour)
     weight_matrix = [[1.0]*N for i in range(N)]
-    boost_weight = 3.0
+    boost_weight = 4
     for i in range(N):
         node_from, node_to = tour[i],tour[(i+1)%N]
         weight_matrix[node_from][node_to] += boost_weight
@@ -95,7 +95,7 @@ def solve_ant_colony(cities, tour, dist):
     agent_num = 2000 # エージェント(蟻)の数
     boost_weight = len(cities)*10
     MIN_WEIGHT = 1e-5
-    MAX_WEIGHT = 10
+    MAX_WEIGHT = 500
 
     length_history = [] # グラフのための、距離の履歴保存
 
@@ -121,11 +121,8 @@ def solve_ant_colony(cities, tour, dist):
             
             probabilities = []
             for next_city in cities_list:
-                # print("weight",weight_matrix[current_city][next_city]**alpha)
-                # print("1.0/dist",(1.0/dist[current_city][next_city])**beta)
                 probabilities.append((weight_matrix[current_city][next_city]**alpha)*((1.0/dist[current_city][next_city])**beta) /bunbo)
 
-            # print("確率\n",probabilities)
             # 上記で求めた確率に沿って、次にどの都市に行くかを決める
             next_city = random.choices(cities_list,weights = probabilities ,k=1)[0]
             current_tour.append(next_city)  # ツアーに次の都市を追加
@@ -140,8 +137,8 @@ def solve_ant_colony(cities, tour, dist):
                 weight_matrix[i][j] *= evapotarion_rate
                 weight_matrix[i][j] = max(min(weight_matrix[i][j],MAX_WEIGHT),MIN_WEIGHT)
         boost_distribution = boost_weight / current_length # ゴールまでかかった距離が短いほど高いウエイトがもらえる
-        # if current_length <= best_length * 1.05: # 重みの増加を、現在の解が、最適解の105%以内のときだけにする
-        if current_length > 0:
+        if current_length <= best_length * 1.5: # 重みの増加を、現在の解が、最適解の105%以内のときだけにする
+        # if current_length > 0:
             for i in range(N):  # 今通ったルートの重みを付ける
                 node_from = current_tour[i]
                 node_to = current_tour[(i+1)%N]
@@ -165,6 +162,16 @@ def solve_ant_colony(cities, tour, dist):
                 weight_matrix[node_to][node_from] = min(weight_matrix[node_to][node_from],MAX_WEIGHT)
         length_history.append(current_length)
     
+    # length_history の値を history.csv に書き込む
+    try:
+        with open('zhistory.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['TourLength']) # ヘッダー行
+            for i, length in enumerate(length_history):
+                writer.writerow([length])
+        print("Length history saved to history.csv")
+    except Exception as e:
+        print(f"Error saving history to CSV: {e}")
     
     # 距離の収束グラフを表示
     plt.figure(figsize=(10, 5))
