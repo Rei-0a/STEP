@@ -3,6 +3,7 @@ import math
 import csv
 import re
 from common import print_tour, read_input
+import random
 
 
 def distance(city1, city2):
@@ -29,6 +30,7 @@ def solve_greedy(cities, dist):
         unvisited_cities.remove(next_city)
         tour.append(next_city)
         current_city = next_city
+    
     return tour
 
 def solve_2opt(cities, tour, dist):
@@ -54,7 +56,7 @@ def solve_2opt(cities, tour, dist):
                     c = tour[(b_index+1) % N]
 
                     if (dist[a][d] + dist[b][c]) > (dist[a][b] + dist[c][d]):   # (A->DとB->Cの長さ) > (A->BとC->Dの長さ)のとき、
-                        print(a,d,'->',b,c)
+                        # print(a,d,'->',b,c)
                         tour[a_index+1:b_index+1] = tour[a_index+1:b_index+1][::-1]
                         changed = True
                         # break
@@ -62,17 +64,113 @@ def solve_2opt(cities, tour, dist):
             break
     return tour
 
+def calculate_tour_length(tour, dist):
+    total_length = 0
+    for i in range(len(tour)):
+        from_city = tour[i]
+        to_city = tour[(i + 1) % len(tour)]  # 閉路になるように
+        total_length += dist[from_city][to_city]
+    return total_length
+
+
+# 重みづけ行列の初期化
+def initialize_weight_matrix(tour):
+    N = len(tour)
+    weight_matrix = [[0.1]*N for i in range(N)]
+    boost_weight = 2.0
+    for i in range(N):
+        node_from, node_to = tour[i],tour[(i+1)%N]
+        weight_matrix[node_from][node_to] += boost_weight
+        weight_matrix[node_to][node_from] += boost_weight
+
+    return weight_matrix
+
+# 蟻コロニー最適化
+def solve_ant_colony(cities, tour, dist):
+    # 適当に設定する必要のある変数
+
+    alpha = 1 # 重みづけの優先度
+    beta = 2  # ヒューリスティックの優先度
+    evapotarion_rate = 0.9  # 1周ごとに重みが残る割合
+    agent_num = 10000 # エージェント(蟻)の数
+
+
+    N = len(cities)
+    best_tour = tour    # 最も良いツアーを保存する変数
+    best_length = calculate_tour_length(tour,dist)   #　最も良いツアーの総距離を保存する変数
+    weight_matrix = initialize_weight_matrix(tour)    # 初期の重みづけを分布
+
+    for agent in range(agent_num):  # 各エージェントを動かす
+        print(agent)
+        unvisited_cities  = set(range(0,N))  # 訪れていない都市のセット
+        # current_city = random.randint(0,N-1)    # 最初の探索開始地をランダムに選択
+        current_city = 0
+        unvisited_cities.remove(current_city)   # 最初の地点を取り除く
+        current_tour = [current_city]
+        current_length = 0
+
+        while unvisited_cities: # 訪れていない都市がなくなるまで繰り返す
+            cities_list = list(unvisited_cities)
+
+            # まだ訪れていない都市それぞれへ行く確率を計算する
+            bunbo = 0
+            for next_city in cities_list:
+                bunbo += (weight_matrix[current_city][next_city]**alpha)*((1.0/dist[current_city][next_city])**beta)# 現在の都市から次の都市までの評価値の総和
+            
+            probabilities = []
+            for next_city in cities_list:
+                # print("weight",weight_matrix[current_city][next_city]**alpha)
+                # print("1.0/dist",(1.0/dist[current_city][next_city])**beta)
+                probabilities.append((weight_matrix[current_city][next_city]**alpha)*((1.0/dist[current_city][next_city])**beta) /bunbo)
+
+            # print("確率\n",probabilities)
+            # 上記で求めた確率に沿って、次にどの都市に行くかを決める
+            next_city = random.choices(cities_list,weights = probabilities ,k=1)[0]
+            
+            current_length += dist[current_city][next_city]
+            current_tour.append(next_city)  # ツアーに次の都市を追加
+            unvisited_cities.remove(next_city)  # set からも取り除く
+            # print("next->",next_city)
+            current_city = next_city
+        
+        # かかった距離に合わせて、重みづけを追加する
+        for i in range(N):  # 今までの重みをevaporation_rate倍して、減少させる
+            for j in range(N):
+                weight_matrix[i][j] *= evapotarion_rate
+        boost_weight = 1.0 / current_length # ゴールまでかかった距離が短いほど高いウエイトがもらえる
+        for i in range(N):  # 今通ったルートの重みを付ける
+            node_from = current_tour[i]
+            node_to = current_tour[(i+1)%N]
+            weight_matrix[node_from][node_to] += boost_weight
+            weight_matrix[node_to][node_from] += boost_weight
+
+        if current_length < best_length:
+            best_tour = current_tour
+            best_length = current_length
+            print("更新",current_length)
+
+    # print(tour)
+    # length = calculate_tour_length(tour,dist)
+    # print("current ", length)
+    return best_tour
+
+
+
 def solve(cities):
     dist = calculate_distance_matrix(cities)
     tour = solve_greedy(cities,dist)
     tour = solve_2opt(cities, tour, dist)
+    
+    print("greedy+2opt",calculate_tour_length(tour,dist))
+    tour = solve_ant_colony(cities,tour, dist)
     return tour
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1
     tour = solve(read_input(sys.argv[1]))
-    print_tour(tour)
-    with open('output_4.csv','w',newline='') as f:
+    # print_tour(tour)
+    print("finished")
+    with open('output_6.csv','w',newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['index'])
         for city in tour:
