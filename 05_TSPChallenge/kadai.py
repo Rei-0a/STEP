@@ -49,6 +49,7 @@ def solve(cities):
 
                     if (dist[a][d] + dist[b][c]) > (dist[a][b] + dist[c][d]):   # (A->DとB->Cの長さ) > (A->BとC->Dの長さ)のとき、
                         # print(a,d,'->',b,c)
+                        changed = True
                         tour[a_index+1:b_index+1] = tour[a_index+1:b_index+1][::-1]
 
         if changed == False:
