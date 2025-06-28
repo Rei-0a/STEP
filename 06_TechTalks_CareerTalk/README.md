@@ -10,7 +10,7 @@ python -m SimpleHTTPServer 8000 # If you don’t want to install Python 3
 
 ```
 
-を実行した後に、`http://localhost:8000/visualizer/build/default/`のリンクを開くことでビジュアライズ可能。
+を実行した後に、[リンク](http://localhost:8000/visualizer/build/default/)を開くことでビジュアライズ可能。
 
 ## 2. 各課題の内容
 
