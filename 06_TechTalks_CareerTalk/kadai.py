@@ -77,7 +77,7 @@ def calculate_tour_length(tour, dist):
 def initialize_weight_matrix(tour):
     N = len(tour)
     weight_matrix = [[1.0]*N for i in range(N)]
-    boost_weight = 4
+    boost_weight = 5
     for i in range(N):
         node_from, node_to = tour[i],tour[(i+1)%N]
         weight_matrix[node_from][node_to] += boost_weight
@@ -92,13 +92,12 @@ def solve_ant_colony(cities, tour, dist):
     alpha = 1.8 # 重みづけの優先度
     beta = 3  # ヒューリスティックの優先度
     evapotarion_rate = 0.98  # 1周ごとに重みが残る割合
-    agent_num = 2000 # エージェント(蟻)の数
+    agent_num = 100 # エージェント(蟻)の数
     boost_weight = len(cities)*10
-    MIN_WEIGHT = 1e-5
-    MAX_WEIGHT = 500
+    MIN_WEIGHT = 1e-8
+    MAX_WEIGHT = 10
 
     length_history = [] # グラフのための、距離の履歴保存
-
 
     N = len(cities)
     best_tour = tour    # 最も良いツアーを保存する変数
@@ -131,14 +130,16 @@ def solve_ant_colony(cities, tour, dist):
             current_city = next_city
         
         current_length = calculate_tour_length(current_tour,dist)
+
         # かかった距離に合わせて、重みづけを追加する
         for i in range(N):  # 今までの重みをevaporation_rate倍して、減少させる
-            for j in range(N):
-                weight_matrix[i][j] *= evapotarion_rate
-                weight_matrix[i][j] = max(min(weight_matrix[i][j],MAX_WEIGHT),MIN_WEIGHT)
+            for j in range(i, N):
+                weight_matrix[i][j] *= evapotarion_rate # 蒸発させる量
+                weight_matrix[i][j] = max(min(weight_matrix[i][j],MAX_WEIGHT),MIN_WEIGHT)   # MIN< 今の重み <MAXになるように調整
         boost_distribution = boost_weight / current_length # ゴールまでかかった距離が短いほど高いウエイトがもらえる
-        if current_length <= best_length * 1.5: # 重みの増加を、現在の解が、最適解の105%以内のときだけにする
-        # if current_length > 0:
+
+        # if current_length <= best_length * 1.1: # 重みの増加を、現在の解が、最適解の105%以内のときだけにするとき
+        if current_length > 0:  # 重みはどの解にもつけるとき
             for i in range(N):  # 今通ったルートの重みを付ける
                 node_from = current_tour[i]
                 node_to = current_tour[(i+1)%N]
@@ -147,13 +148,13 @@ def solve_ant_colony(cities, tour, dist):
                 # print(boost_distribution)
                 weight_matrix[node_from][node_to] = min(weight_matrix[node_from][node_to],MAX_WEIGHT)
                 weight_matrix[node_to][node_from] = min(weight_matrix[node_to][node_from],MAX_WEIGHT)
-        # print(agent, current_length)
-        if current_length < best_length:
+        print(agent, current_length)
+        if current_length < best_length:    # 今通ったルートが今のところの最適解であったとき
             best_tour = current_tour
             best_length = current_length
             print("更新",current_length)
-            for i in range(N):  # 今通ったルートの重みを付ける
-                boost_distribution = (boost_weight/current_length)*2
+            for i in range(N):  # 今通ったルートの重みをさらに付ける(-> 最適解に行きやすくなるかも？)
+                boost_distribution = (boost_weight/current_length)*2    # 要調整
                 node_from = current_tour[i]
                 node_to = current_tour[(i+1)%N]
                 weight_matrix[node_from][node_to] += boost_distribution
@@ -185,21 +186,20 @@ def solve_ant_colony(cities, tour, dist):
     plt.savefig('aco_convergence.png')  # 画像として保存
     plt.show()
 
-
-    # print(tour)
-    # length = calculate_tour_length(tour,dist)
-    # print("current ", length)
     return best_tour
 
 
 
 def solve(cities):
-    dist = calculate_distance_matrix(cities)
-    tour = solve_greedy(cities,dist)
-    tour = solve_2opt(cities, tour, dist)
-    
+    dist = calculate_distance_matrix(cities)    # ノード間距離を求める
+    tour = solve_greedy(cities,dist)    # 貪欲法で得た解をtourに入れる
+    # tour = solve_2opt(cities, tour, dist)
+    # 蟻コロニー最適化の初期値をランダムにしたいときコメントアウトを外す
+    # tour = list(range(128))
+    # random.shuffle(tour)
+    # ここまで
     print("greedy+2opt",calculate_tour_length(tour,dist))
-    tour = solve_ant_colony(cities,tour, dist)
+    tour = solve_ant_colony(cities,tour, dist)  # tourを初期解として、アリコロニー最適化を行う
     return tour
 
 if __name__ == '__main__':
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     tour = solve(read_input(sys.argv[1]))
     # print_tour(tour)
     print("finished")
-    with open('output_4.csv','w',newline='') as f:
+    with open('output_7.csv','w',newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['index'])
         for city in tour:
