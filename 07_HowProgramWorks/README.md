@@ -21,6 +21,10 @@
 - 自由に改善して性能を向上させる！
     - UtilizationとSpeedが大切
 
+### 実行方法
+1. mallocディレクトリ内で、makeを実行
+2. mallocディレクトリ内でmake run_traceを実行した後、[malloc visualizer](https://hikalium.github.io/malloc_challenge/visualizer/)にアクセスして、mallocの動きを観察できる🔍
+
 <!-- ---
 
 ## 3. Goals and Non-Goals
@@ -36,9 +40,54 @@
 
 ## 4. 提案する設計（Proposed Design）
 
+### 4.1 Best-Fit malloc
 
+```
+// Best-fit
+  my_metadata_t *best_metadata = NULL;
+  my_metadata_t *best_prev = NULL;
+  while (metadata) {  // 次のmetadataがなくなるまで、bestなmetadataを探す
+    if (size <= metadata->size){  // sizeよりも大きいmetadata->sizeが見つかった
+      if ( best_metadata == NULL || metadata->size < best_metadata->size){ // 必要なサイズ < metadataのサイズ < 今のベストサイズ のとき
+        best_metadata = metadata;
+        best_prev = prev;
+    }
+    }
+    prev = metadata;
+    metadata = metadata->next;
+  }
+  prev = best_prev; // 最も良いmetadataにする。
+  metadata = best_metadata;
+```
 
 ## 5. 結果
+
+最初の実行結果
+```
+Challenge #2    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|              26 =>              23
+Utilization [%] |              39 =>              39
+====================================================
+Challenge #3    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|             339 =>             258
+Utilization [%] |               9 =>               9
+====================================================
+Challenge #4    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           89289 =>           91900
+Utilization [%] |              16 =>              16
+====================================================
+Challenge #5    |   simple_malloc =>       my_malloc
+--------------- + --------------- => ---------------
+       Time [ms]|           99037 =>           92859
+Utilization [%] |              15 =>              15
+
+Challenge done!
+Please copy & paste the following data in the score sheet!
+16,70,23,39,258,9,91900,16,92859,15,
+```
 
 
 

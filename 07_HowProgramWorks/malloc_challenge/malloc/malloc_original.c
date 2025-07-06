@@ -79,33 +79,14 @@ void *my_malloc(size_t size) {
   my_metadata_t *prev = NULL;
   // First-fit: Find the first free slot the object fits.
   // TODO: Update this logic to Best-fit!
-  // while (metadata && metadata->size < size) { // sizeの入ることができるmetadataの場所を探すまでループ
-  //   prev = metadata;
-  //   metadata = metadata->next;
-  // }
-  
-  // Best-fit
-  my_metadata_t *best_metadata = NULL;
-  my_metadata_t *best_prev = NULL;
-  while (metadata) {
-    if (size <= metadata->size){  // sizeよりも大きいmetadata->sizeが見つかった
-      if ( best_metadata == NULL || metadata->size < best_metadata->size){ // 必要なサイズ < metadataのサイズ < 今のベストサイズ のとき
-        best_metadata = metadata;
-        best_prev = prev;
-    }
-    }
-    
+  while (metadata && metadata->size < size) {
     prev = metadata;
     metadata = metadata->next;
   }
-  prev = best_prev;
-  metadata = best_metadata;
-
-
   // now, metadata points to the first free slot
   // and prev is the previous entry.
 
-  if (!metadata) {  // metadataがなければ新しいメモリ領域を要求する
+  if (!metadata) {
     // There was no free slot available. We need to request a new memory region
     // from the system by calling mmap_from_system().
     //
