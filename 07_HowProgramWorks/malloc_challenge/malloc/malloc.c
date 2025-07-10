@@ -195,6 +195,27 @@ void my_free(void *ptr) {
   //     ^          ^
   //     metadata   ptr
   my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
+
+  // 左側と結合するとき
+  for (int i = 0; i < N ; i++ ){
+    my_metadata_t *cur = my_heap.free_head[i];
+    my_metadata_t *prev = NULL;
+    while (cur){  // 現在のビンを全て探索する
+      
+      if((cur+1 + cur->size)==metadata){
+        //  | free_metadata | free | metadata | object | ...
+        //  ^                      ^          ^         
+        //  cur       cur+1+size = metadata   ptr
+        // cur + 1 + cur->size == metadataだったとき、左側結合をする
+        my_remove_from_free_list(cur,prev,calculate_bin_index(cur->size)); // そのリストをいったん削除
+        cur->size += sizeof(my_metadata_t) + metadata->size; // 次のmetadataのサイズとそのsizeの分を足しいれる
+        my_add_to_free_list(cur,calculate_bin_index(cur->size));
+        return;
+      }
+      prev = cur;
+      cur = cur->next;
+    }
+  }
   // Add the free slot to the free list.
   my_add_to_free_list(metadata,calculate_bin_index(metadata->size));
 }
